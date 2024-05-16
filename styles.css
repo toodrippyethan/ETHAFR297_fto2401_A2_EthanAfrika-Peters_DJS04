@@ -92,8 +92,8 @@ option {
 }
 
 .header__icon {
-  width: 1rem;
-  height: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
   fill: rgba(var(--color-force-light), 1);
 }
 
@@ -134,7 +134,7 @@ option {
 
 .list__items {
   display: grid;
-  padding: 1rem 1rem;
+  padding: 2rem 1rem;
   grid-template-columns: 1fr;
   grid-column-gap: 0.5rem;
   grid-row-gap: 0.5rem;
@@ -203,7 +203,7 @@ option {
   border-width: 0;
   width: 100%;
   font-family: Roboto, sans-serif;
-  padding: 1.5rem 1rem;
+  padding: 0.5rem 1rem;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -228,8 +228,8 @@ option {
 }
 
 .preview__image {
-  width: 20px;
-  height: 20px;
+  width: 48px;
+  height: 70px;
   object-fit: cover;
   background: grey;
   border-radius: 2px;
@@ -442,7 +442,7 @@ option {
 .book-preview {
   display: flex;
   gap: 1rem;
-  padding: 3rem;
+  padding: 1rem;
   border: 1px solid rgba(var(--color-dark), 0.1);
   border-radius: 8px;
   background-color: rgba(var(--color-light), 0.8);
@@ -454,10 +454,9 @@ option {
   background-color: rgba(var(--color-light), 1);
 }
 
-
 .book-preview__image {
-  width: 24px;
-  height: 25px;
+  width: 100px;
+  height: 150px;
   object-fit: cover;
   border-radius: 4px;
 }

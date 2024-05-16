@@ -1,6 +1,7 @@
 import { books, authors, genres, BOOKS_PER_PAGE } from './data.js';
 
-let matches = []; // Declare matches as a global variable
+let page = 1; // Declare and initialize page variable
+let matches = books; // Declare matches as a global variable
 
 // Utility function to create an element with attributes and inner HTML
 function createElement(tag, attributes = {}, innerHTML = '') {
@@ -41,7 +42,7 @@ class BookPreview extends HTMLElement {
 
         const linkElem = document.createElement('link');
         linkElem.setAttribute('rel', 'stylesheet');
-        linkElem.setAttribute('href', 'style.css'); // Ensure this path is correct based on your project structure
+        linkElem.setAttribute('href', 'styles.css'); 
         shadow.appendChild(linkElem);
     }
 
@@ -58,17 +59,16 @@ customElements.define('book-preview', BookPreview);
 
 // Function to render book previews using the new Web Component
 function renderBookPreviews(books, container) {
-    const fragment = document.createDocumentFragment();
     for (const { author, id, image, title } of books) {
         const element = document.createElement('book-preview');
         element.setAttribute('data-preview', id);
         element.setAttribute('image', image);
         element.setAttribute('title', title);
         element.setAttribute('author', authors[author]);
-        fragment.appendChild(element);
+        container.appendChild(element);
     }
-    container.appendChild(fragment);
 }
+
 
 // Function to populate dropdown options
 function populateDropdownOptions(container, options, defaultOptionText) {
@@ -119,13 +119,16 @@ function handleSearch(event) {
         return genreMatch && titleMatch && authorMatch;
     });
 
-    matches = result;
-    updateBookList(result);
+    page = 1; // Reset page to 1 when a new search is performed
+    matches = result; // Update matches to reflect the filtered results
+    updateBookList(result); // Update the book list with the filtered results
     const message = document.querySelector('[data-list-message]');
     message.classList.toggle('list__message_show', result.length < 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.querySelector('[data-search-overlay]').open = false;
 }
+
+
 
 // Function to initialize the search and settings form
 function initializeForms() {
@@ -167,10 +170,20 @@ function handleShowMore() {
     const fragment = document.createDocumentFragment();
     const start = page * BOOKS_PER_PAGE;
     const end = start + BOOKS_PER_PAGE;
-    renderBookPreviews(matches.slice(start, end), fragment);
-    document.querySelector('[data-list-items]').appendChild(fragment);
-    page += 1;
+
+    if (start < matches.length) { // Check if there are remaining books to show
+        renderBookPreviews(matches.slice(start, end), fragment);
+        document.querySelector('[data-list-items]').appendChild(fragment);
+        page += 1; // Increment page for next set of books
+    } else {
+
+        // Disable the "Show more" button if there are no remaining books
+        document.querySelector('[data-list-button]').disabled = true;
+        
+    }
 }
+
+
 
 // Function to handle book preview click
 function handleBookPreviewClick(event) {
@@ -208,12 +221,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeForms();
 
     // Render initial book previews
-    updateBookList(books);
+    updateBookList(books); // Update the book list with the full list of books
 
     // Attach event listeners
     document.querySelector('[data-list-button]').addEventListener('click', handleShowMore);
     document.querySelector('[data-list-items]').addEventListener('click', handleBookPreviewClick);
 });
 
-// Set page variable
-let page = 1;
