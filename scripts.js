@@ -1,7 +1,6 @@
-import { books, authors, genres, BOOKS_PER_PAGE } from './data.js'
+import { books, authors, genres, BOOKS_PER_PAGE } from './data.js';
 
-let page = 1;
-let matches = books
+let matches = []; // Declare matches as a global variable
 
 // Utility function to create an element with attributes and inner HTML
 function createElement(tag, attributes = {}, innerHTML = '') {
@@ -11,22 +10,61 @@ function createElement(tag, attributes = {}, innerHTML = '') {
     }
     element.innerHTML = innerHTML;
     return element;
-} 
+}
 
-// Function to render book previews
+// Web Component definition for Book Preview
+class BookPreview extends HTMLElement {
+    constructor() {
+        super();
+        const shadow = this.attachShadow({ mode: 'open' });
+
+        const container = document.createElement('div');
+        container.className = 'preview';
+
+        const img = document.createElement('img');
+        img.className = 'preview__image';
+
+        const info = document.createElement('div');
+        info.className = 'preview__info';
+
+        const title = document.createElement('h3');
+        title.className = 'preview__title';
+
+        const author = document.createElement('div');
+        author.className = 'preview__author';
+
+        info.appendChild(title);
+        info.appendChild(author);
+        container.appendChild(img);
+        container.appendChild(info);
+        shadow.appendChild(container);
+
+        const linkElem = document.createElement('link');
+        linkElem.setAttribute('rel', 'stylesheet');
+        linkElem.setAttribute('href', 'style.css'); // Ensure this path is correct based on your project structure
+        shadow.appendChild(linkElem);
+    }
+
+    connectedCallback() {
+        const shadow = this.shadowRoot;
+        shadow.querySelector('.preview').setAttribute('data-preview', this.getAttribute('data-preview'));
+        shadow.querySelector('.preview__image').src = this.getAttribute('image');
+        shadow.querySelector('.preview__title').textContent = this.getAttribute('title');
+        shadow.querySelector('.preview__author').textContent = this.getAttribute('author');
+    }
+}
+
+customElements.define('book-preview', BookPreview);
+
+// Function to render book previews using the new Web Component
 function renderBookPreviews(books, container) {
     const fragment = document.createDocumentFragment();
     for (const { author, id, image, title } of books) {
-        const element = createElement('button', {
-            class: 'preview',
-            'data-preview': id,
-        }, `
-            <img class="preview__image" src="${image}" />
-            <div class="preview__info">
-                <h3 class="preview__title">${title}</h3>
-                <div class="preview__author">${authors[author]}</div>
-            </div>
-        `);
+        const element = document.createElement('book-preview');
+        element.setAttribute('data-preview', id);
+        element.setAttribute('image', image);
+        element.setAttribute('title', title);
+        element.setAttribute('author', authors[author]);
         fragment.appendChild(element);
     }
     container.appendChild(fragment);
@@ -42,8 +80,8 @@ function populateDropdownOptions(container, options, defaultOptionText) {
         fragment.appendChild(optionElement);
     }
     container.appendChild(fragment);
-
 }
+
 // Utility function to set the theme
 function setTheme(theme) {
     const darkColors = theme === 'night' ? '255, 255, 255' : '10, 10, 20';
@@ -52,7 +90,6 @@ function setTheme(theme) {
     document.documentElement.style.setProperty('--color-light', lightColors);
     document.querySelector('[data-settings-theme]').value = theme;
 }
-
 
 // Function to update the book list
 function updateBookList(matches) {
@@ -82,14 +119,10 @@ function handleSearch(event) {
         return genreMatch && titleMatch && authorMatch;
     });
 
-    page = 1;
     matches = result;
-    if (result.length < 1) {
-        document.querySelector('[data-list-message]').classList.add('list__message_show');
-    } else {
-        document.querySelector('[data-list-message]').classList.remove('list__message_show');
-    }
     updateBookList(result);
+    const message = document.querySelector('[data-list-message]');
+    message.classList.toggle('list__message_show', result.length < 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.querySelector('[data-search-overlay]').open = false;
 }
@@ -161,7 +194,6 @@ function handleBookPreviewClick(event) {
     }
 }
 
-
 // Initial setup
 document.addEventListener('DOMContentLoaded', () => {
     // Populate genre and author dropdowns
@@ -176,9 +208,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeForms();
 
     // Render initial book previews
-    updateBookList(matches);
+    updateBookList(books);
 
     // Attach event listeners
     document.querySelector('[data-list-button]').addEventListener('click', handleShowMore);
     document.querySelector('[data-list-items]').addEventListener('click', handleBookPreviewClick);
 });
+
+// Set page variable
+let page = 1;
